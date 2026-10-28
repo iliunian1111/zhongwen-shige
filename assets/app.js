@@ -134,13 +134,27 @@ function route() {
   return renderToday()
 }
 
+function verseLineHtml(line) {
+  const text = String(line || "").trim()
+  if (!text) return ""
+  // 按文言标点切成短语；短语内部不换行，整句才显得工整
+  const parts = text.split(/(?<=[，。；？！、：])/).filter(Boolean)
+  if (parts.length <= 1 && text.length <= 18) {
+    return `<p class="verse-line verse-line--single">${escapeHtml(text)}</p>`
+  }
+  if (parts.length <= 1) {
+    return `<p class="verse-line verse-line--single">${escapeHtml(text)}</p>`
+  }
+  return `<p class="verse-line">${parts.map((p) => `<span class="phrase">${escapeHtml(p)}</span>`).join("")}</p>`
+}
+
 function readingBlock(poem, actions = "") {
   const meta = [poem.author, poem.rhythmic, poem.shelf].filter(Boolean).join(" · ")
   return `
     <article class="reading">
       <h1 class="title">${escapeHtml(poem.title)}</h1>
       <div class="meta">${escapeHtml(meta)}</div>
-      <div class="verse">${poem.lines.map((l) => `<p>${escapeHtml(l)}</p>`).join("")}</div>
+      <div class="verse">${poem.lines.map(verseLineHtml).join("")}</div>
       ${actions}
     </article>
   `

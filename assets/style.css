@@ -159,14 +159,39 @@ main {
 
 .reading .verse {
   margin: 0 auto;
-  max-width: 28em;
+  max-width: min(46rem, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55em;
 }
 
-.reading .verse p {
-  margin: 0.28em 0;
-  font-size: clamp(18px, 2.6vw, 22px);
-  letter-spacing: 0.14em;
+/* 一句一行：短句不拆字；长句只在标点后折行，避免末字落单 */
+.reading .verse-line {
+  margin: 0;
+  font-size: clamp(17px, 2.5vw, 22px);
+  letter-spacing: 0.1em;
   color: var(--ink-soft);
+  line-height: 1.85;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.reading .verse-line--single {
+  display: block;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  text-align: center;
+  scrollbar-width: none;
+}
+
+.reading .verse-line--single::-webkit-scrollbar { display: none; }
+
+.reading .phrase {
+  white-space: nowrap;
 }
 
 .actions {
