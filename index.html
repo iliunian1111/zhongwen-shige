@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>中文诗歌</title>
+  <meta name="description" content="中文古典诗歌开源全库网页：唐诗、宋诗、宋词、元曲等" />
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="brand">
+      <h1>中文诗歌</h1>
+      <div class="sub">开源全库 · GitHub Pages</div>
+    </header>
+
+    <section id="homeView">
+      <div class="hero">
+        <div class="seal">诗</div>
+        <h2 id="heroTitle">加载中…</h2>
+        <div class="author" id="heroAuthor"></div>
+        <div class="lines" id="heroLines"></div>
+      </div>
+      <p class="status" id="statusHome">选择书库开始浏览全量数据</p>
+      <div class="grid" id="collectionGrid"></div>
+    </section>
+
+    <section id="listView" class="hidden">
+      <div class="toolbar">
+        <button class="ghost" id="backHome" type="button">返回首页</button>
+        <strong id="listTitle"></strong>
+      </div>
+      <div class="toolbar">
+        <select id="fileSelect"></select>
+        <input id="searchInput" type="search" placeholder="在当前文件中搜索标题 / 作者 / 诗句" />
+      </div>
+      <p class="status" id="status"></p>
+      <div class="panel" id="poemList"></div>
+      <div class="pager">
+        <button class="ghost" id="prevBtn" type="button">上一页</button>
+        <span class="muted" id="pageInfo">1 / 1</span>
+        <button class="ghost" id="nextBtn" type="button">下一页</button>
+      </div>
+    </section>
+
+    <section id="detailView" class="hidden">
+      <div class="toolbar">
+        <button class="ghost" id="backList" type="button">返回列表</button>
+      </div>
+      <div class="detail">
+        <h2 id="detailTitle"></h2>
+        <div class="author" id="detailAuthor"></div>
+        <div class="body" id="detailBody"></div>
+      </div>
+    </section>
+
+    <footer>
+      数据来源：
+      <a href="https://github.com/chinese-poetry/chinese-poetry" target="_blank" rel="noopener">chinese-poetry</a>
+      · 本站仅作学习浏览
+    </footer>
+  </div>
+  <script src="./assets/app.js"></script>
+</body>
+</html>
