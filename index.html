@@ -4,62 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>中文诗歌</title>
-  <meta name="description" content="中文古典诗歌开源全库网页：唐诗、宋诗、宋词、元曲等" />
+  <meta name="description" content="可读可查可藏的古典诗词阅读站：唐诗、宋词、诗经、元曲与全库检索。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./assets/style.css" />
 </head>
 <body>
-  <div class="wrap">
-    <header class="brand">
-      <h1>中文诗歌</h1>
-      <div class="sub">开源全库 · GitHub Pages</div>
-    </header>
+  <div class="paper" aria-hidden="true"></div>
 
-    <section id="homeView">
-      <div class="hero">
-        <div class="seal">诗</div>
-        <h2 id="heroTitle">加载中…</h2>
-        <div class="author" id="heroAuthor"></div>
-        <div class="lines" id="heroLines"></div>
-      </div>
-      <p class="status" id="statusHome">选择书库开始浏览全量数据</p>
-      <div class="grid" id="collectionGrid"></div>
-    </section>
+  <header class="top">
+    <a class="logo" href="#/" data-nav="today">中文诗歌</a>
+    <nav class="nav" aria-label="主导航">
+      <a href="#/" data-nav="today">今日</a>
+      <a href="#/library" data-nav="library">书库</a>
+      <a href="#/search" data-nav="search">检索</a>
+      <a href="#/favs" data-nav="favs">收藏</a>
+    </nav>
+  </header>
 
-    <section id="listView" class="hidden">
-      <div class="toolbar">
-        <button class="ghost" id="backHome" type="button">返回首页</button>
-        <strong id="listTitle"></strong>
-      </div>
-      <div class="toolbar">
-        <select id="fileSelect"></select>
-        <input id="searchInput" type="search" placeholder="在当前文件中搜索标题 / 作者 / 诗句" />
-      </div>
-      <p class="status" id="status"></p>
-      <div class="panel" id="poemList"></div>
-      <div class="pager">
-        <button class="ghost" id="prevBtn" type="button">上一页</button>
-        <span class="muted" id="pageInfo">1 / 1</span>
-        <button class="ghost" id="nextBtn" type="button">下一页</button>
-      </div>
-    </section>
+  <main id="app">
+    <!-- views injected by app.js -->
+  </main>
 
-    <section id="detailView" class="hidden">
-      <div class="toolbar">
-        <button class="ghost" id="backList" type="button">返回列表</button>
-      </div>
-      <div class="detail">
-        <h2 id="detailTitle"></h2>
-        <div class="author" id="detailAuthor"></div>
-        <div class="body" id="detailBody"></div>
-      </div>
-    </section>
+  <footer class="foot">
+    <span>开卷有诗</span>
+    <span class="dot">·</span>
+    <a href="https://github.com/chinese-poetry/chinese-poetry" target="_blank" rel="noopener">数据来自 chinese-poetry</a>
+    <span class="dot">·</span>
+    <a href="https://github.com/iliunian1111/zhongwen-shige" target="_blank" rel="noopener">本站源码</a>
+  </footer>
 
-    <footer>
-      数据来源：
-      <a href="https://github.com/chinese-poetry/chinese-poetry" target="_blank" rel="noopener">chinese-poetry</a>
-      · 本站仅作学习浏览
-    </footer>
-  </div>
   <script src="./assets/app.js"></script>
 </body>
 </html>
