@@ -148,11 +148,121 @@ function verseLineHtml(line) {
   return `<p class="verse-line">${parts.map((p) => `<span class="phrase">${escapeHtml(p)}</span>`).join("")}</p>`
 }
 
+/* —— 语音朗读（浏览器自带，无需服务器） —— */
+const tts = {
+  speaking: false,
+  poemId: null,
+  supported() {
+    return typeof window !== "undefined" && "speechSynthesis" in window
+  },
+  stop() {
+    if (!this.supported()) return
+    window.speechSynthesis.cancel()
+    this.speaking = false
+    this.poemId = null
+    syncSpeakButtons()
+  },
+  pickVoice() {
+    const voices = window.speechSynthesis.getVoices() || []
+    return (
+      voices.find((v) => /zh(-|_)?CN/i.test(v.lang)) ||
+      voices.find((v) => /zh(-|_)?TW|zh(-|_)?HK/i.test(v.lang)) ||
+      voices.find((v) => /^zh/i.test(v.lang)) ||
+      null
+    )
+  },
+  speak(poem) {
+    if (!this.supported()) {
+      alert("当前浏览器暂不支持朗读，可换 Safari / Chrome 再试")
+      return
+    }
+    if (this.speaking && this.poemId === poem.id) {
+      this.stop()
+      return
+    }
+    this.stop()
+    const parts = [poem.title, poem.author]
+    if (poem.rhythmic) parts.push(poem.rhythmic)
+    parts.push(...(poem.lines || []))
+    const text = parts.filter(Boolean).join("。")
+    const utter = new SpeechSynthesisUtterance(text)
+    utter.lang = "zh-CN"
+    utter.rate = 0.86
+    utter.pitch = 1
+    const voice = this.pickVoice()
+    if (voice) utter.voice = voice
+    utter.onend = () => {
+      this.speaking = false
+      this.poemId = null
+      syncSpeakButtons()
+    }
+    utter.onerror = () => {
+      this.speaking = false
+      this.poemId = null
+      syncSpeakButtons()
+    }
+    this.speaking = true
+    this.poemId = poem.id
+    syncSpeakButtons()
+    // 部分浏览器需等 voices 就绪
+    const start = () => window.speechSynthesis.speak(utter)
+    if ((window.speechSynthesis.getVoices() || []).length) start()
+    else {
+      window.speechSynthesis.onvoiceschanged = () => {
+        const v = this.pickVoice()
+        if (v) utter.voice = v
+        start()
+      }
+      // 兜底：短暂延迟后再读
+      setTimeout(start, 200)
+    }
+  }
+}
+
+function syncSpeakButtons() {
+  document.querySelectorAll("[data-speak]").forEach((btn) => {
+    const on = tts.speaking && tts.poemId === btn.dataset.speak
+    btn.classList.toggle("speaking", on)
+    btn.setAttribute("aria-pressed", on ? "true" : "false")
+    btn.title = on ? "停止朗读" : "朗读此诗"
+    const label = btn.querySelector(".speak-label")
+    if (label) label.textContent = on ? "朗读中" : "朗读"
+  })
+}
+
+function speakButton(poem) {
+  if (!tts.supported()) return ""
+  const on = tts.speaking && tts.poemId === poem.id
+  return `
+    <button type="button" class="speak-btn ${on ? "speaking" : ""}" data-speak="${escapeHtml(poem.id)}"
+      aria-label="朗读此诗" aria-pressed="${on ? "true" : "false"}" title="朗读此诗">
+      <span class="speak-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.3-3.9v7.8A4.5 4.5 0 0 0 16.5 12zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/>
+        </svg>
+      </span>
+      <span class="speak-label">${on ? "朗读中" : "朗读"}</span>
+    </button>
+  `
+}
+
+function bindSpeakButton(poem) {
+  const btn = document.querySelector(`[data-speak="${CSS.escape(poem.id)}"]`)
+  if (!btn) return
+  btn.onclick = (e) => {
+    e.stopPropagation()
+    tts.speak(poem)
+  }
+}
+
 function readingBlock(poem, actions = "") {
   const meta = [poem.author, poem.rhythmic, poem.shelf].filter(Boolean).join(" · ")
   return `
     <article class="reading">
-      <h1 class="title">${escapeHtml(poem.title)}</h1>
+      <div class="title-row">
+        <h1 class="title">${escapeHtml(poem.title)}</h1>
+        ${speakButton(poem)}
+      </div>
       <div class="meta">${escapeHtml(meta)}</div>
       <div class="verse">${poem.lines.map(verseLineHtml).join("")}</div>
       ${actions}
@@ -206,7 +316,9 @@ async function renderToday() {
         </div>
       </section>
     `
+    bindSpeakButton(poem)
     $("btnAnother").onclick = () => {
+      tts.stop()
       const next = pool[Math.floor(Math.random() * pool.length)]
       if (!next.id) next.id = ["daily", next.title, next.author, next.lines[0]].join("|")
       state.current = next
@@ -593,7 +705,8 @@ function renderReader() {
       ${readingBlock(poem)}
     </section>
   `
-  $("backBtn").onclick = () => history.back()
+  bindSpeakButton(poem)
+  $("backBtn").onclick = () => { tts.stop(); history.back() }
   $("favBtn").onclick = () => { toggleFav(poem); renderReader() }
 }
 
@@ -767,8 +880,17 @@ function bindRows(list, id) {
   })
 }
 
-window.addEventListener("hashchange", route)
+window.addEventListener("hashchange", () => {
+  tts.stop()
+  route()
+})
 window.addEventListener("DOMContentLoaded", () => {
+  if (tts.supported()) {
+    // 预热语音列表（Chrome 需触发一次）
+    window.speechSynthesis.getVoices()
+    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices()
+  }
   if (!location.hash) location.hash = "#/"
   else route()
 })
+window.addEventListener("beforeunload", () => tts.stop())
