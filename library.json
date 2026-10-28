@@ -1,73 +1,161 @@
 {
   "title": "中文诗歌",
-  "subtitle": "开卷有诗，可查可藏可诵",
-  "shelves": [
+  "subtitle": "一座可读可学的诗词图书馆",
+  "floors": [
     {
-      "id": "tang300",
-      "name": "唐诗三百首",
-      "era": "唐",
-      "blurb": "童蒙启蒙，也是最常翻的唐诗选本。",
-      "mode": "single",
-      "files": [
-        "data/site/唐诗三百首.json"
-      ],
-      "count": 320,
-      "group": "精选"
+      "id": "path",
+      "name": "入门之路",
+      "guide": "像图书馆的「新手上架」：先读选本，建立语感，再进时代与名家。",
+      "rooms": [
+        "shijing",
+        "chuci",
+        "tang300",
+        "qianjiashi",
+        "song300",
+        "huajian",
+        "nantang"
+      ]
     },
     {
-      "id": "qianjiashi",
-      "name": "千家诗",
-      "era": "唐宋",
-      "blurb": "短诗易记，适合日课背诵。",
-      "mode": "single",
-      "files": [
-        "data/site/千家诗.json"
-      ],
-      "count": 219,
-      "group": "精选"
+      "id": "era",
+      "name": "按时代逛",
+      "guide": "一个时代一间阅览室。先看导读，再决定读选本、名家，还是入全库。",
+      "rooms": [
+        "era-xianqin",
+        "era-wei",
+        "era-tang",
+        "era-wudai",
+        "era-song",
+        "era-yuan",
+        "era-qing"
+      ]
     },
     {
-      "id": "song300",
-      "name": "宋词三百首",
-      "era": "宋",
-      "blurb": "长短句里的心事与风景。",
-      "mode": "single",
-      "files": [
-        "data/宋词/宋词三百首.json"
-      ],
-      "count": 280,
-      "group": "精选"
+      "id": "masters",
+      "name": "名家专架",
+      "guide": "按人读，是最省力的深度学习法。唐与宋分两边架。",
+      "sections": [
+        {
+          "name": "唐人名家",
+          "rooms": [
+            "master-quan-tang-李白",
+            "master-quan-tang-杜甫",
+            "master-quan-tang-白居易",
+            "master-quan-tang-王維",
+            "master-quan-tang-孟浩然",
+            "master-quan-tang-王昌齡",
+            "master-quan-tang-劉禹錫",
+            "master-quan-tang-杜牧",
+            "master-quan-tang-李商隱",
+            "master-quan-tang-韓愈",
+            "master-quan-tang-岑參",
+            "master-quan-tang-柳宗元"
+          ]
+        },
+        {
+          "name": "宋人名家",
+          "rooms": [
+            "master-quan-song-ci-苏轼",
+            "master-quan-song-ci-李清照",
+            "master-quan-song-ci-辛弃疾",
+            "master-quan-song-ci-柳永",
+            "master-quan-song-ci-欧阳修",
+            "master-quan-song-ci-秦观",
+            "master-quan-song-ci-姜夔",
+            "master-quan-song-ci-周邦彦",
+            "master-quan-song-shi-蘇軾",
+            "master-quan-song-shi-陸游",
+            "master-quan-song-shi-王安石"
+          ]
+        }
+      ]
     },
     {
+      "id": "form",
+      "name": "按体裁",
+      "guide": "诗、词、曲路径不同。不知道从哪朝读起时，可先选体裁。",
+      "rooms": [
+        "form-shi",
+        "form-ci",
+        "form-qu",
+        "shuimo"
+      ]
+    }
+  ],
+  "books": {
+    "shijing": {
       "id": "shijing",
       "name": "诗经",
       "era": "先秦",
-      "blurb": "风雅颂，中国诗歌的源头。",
-      "mode": "single",
+      "form": "诗",
+      "blurb": "中国诗歌的源头，风雅颂。",
+      "why": "想从头认识诗，先从这里开始。",
+      "mode": "anthology",
       "files": [
         "data/诗经/shijing.json"
       ],
-      "count": 305,
-      "group": "精选"
+      "count": 305
     },
-    {
+    "chuci": {
       "id": "chuci",
       "name": "楚辞",
       "era": "先秦",
+      "form": "诗",
       "blurb": "香草美人，楚辞的长歌。",
-      "mode": "single",
+      "why": "读懂浪漫与寄托的开端。",
+      "mode": "anthology",
       "files": [
         "data/楚辞/chuci.json"
       ],
-      "count": 65,
-      "group": "精选"
+      "count": 65
     },
-    {
+    "tang300": {
+      "id": "tang300",
+      "name": "唐诗三百首",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "最常被翻开的唐诗选本。",
+      "why": "建立语感、日课背诵的首选。",
+      "mode": "anthology",
+      "files": [
+        "data/site/唐诗三百首.json"
+      ],
+      "count": 320
+    },
+    "qianjiashi": {
+      "id": "qianjiashi",
+      "name": "千家诗",
+      "era": "唐宋",
+      "form": "诗",
+      "blurb": "短诗易记，适合随手诵读。",
+      "why": "篇幅短，适合每天记一两首。",
+      "mode": "anthology",
+      "files": [
+        "data/site/千家诗.json"
+      ],
+      "count": 219
+    },
+    "song300": {
+      "id": "song300",
+      "name": "宋词三百首",
+      "era": "宋",
+      "form": "词",
+      "blurb": "长短句里的心事与风景。",
+      "why": "入门宋词，不必先跳进两万首全库。",
+      "mode": "anthology",
+      "files": [
+        "data/宋词/宋词三百首.json"
+      ],
+      "count": 280
+    },
+    "huajian": {
       "id": "huajian",
       "name": "花间集",
       "era": "五代",
-      "blurb": "词之鼻祖，温韦一脉。",
-      "mode": "multi",
+      "form": "词",
+      "blurb": "词之早期经典，温韦一脉。",
+      "why": "想懂词怎样从诗里长出来。",
+      "mode": "anthology-multi",
       "files": [
         "data/五代诗词/huajianji/huajianji-1-juan.json",
         "data/五代诗词/huajianji/huajianji-2-juan.json",
@@ -80,63 +168,644 @@
         "data/五代诗词/huajianji/huajianji-9-juan.json",
         "data/五代诗词/huajianji/huajianji-x-juan.json"
       ],
-      "count": 497,
-      "group": "精选"
+      "count": 497
     },
-    {
+    "nantang": {
       "id": "nantang",
       "name": "南唐词",
       "era": "五代",
+      "form": "词",
       "blurb": "李璟李煜，亡国之音亦动人。",
-      "mode": "single",
+      "why": "词境转向深情的关键节点。",
+      "mode": "anthology",
       "files": [
         "data/五代诗词/nantang/poetrys.json"
       ],
-      "count": 45,
-      "group": "精选"
+      "count": 45
     },
-    {
-      "id": "caocao",
-      "name": "曹操诗集",
+    "era-xianqin": {
+      "id": "era-xianqin",
+      "name": "先秦",
+      "era": "先秦",
+      "form": "诗",
+      "blurb": "诗的源头：风、骚。",
+      "why": "先摸清源头，再读后代便有来处。",
+      "mode": "bundle",
+      "children": [
+        "shijing",
+        "chuci"
+      ],
+      "count": 370
+    },
+    "era-wei": {
+      "id": "era-wei",
+      "name": "魏晋",
       "era": "魏晋",
-      "blurb": "老骥伏枥，志在千里。",
-      "mode": "single",
+      "form": "诗",
+      "blurb": "建安风骨的一角。",
+      "why": "短而有力，适合一口气读完。",
+      "mode": "anthology",
       "files": [
         "data/曹操诗集/caocao.json"
       ],
-      "count": 26,
-      "group": "精选"
+      "count": 26
     },
-    {
-      "id": "nalan",
-      "name": "纳兰性德",
+    "era-tang": {
+      "id": "era-tang",
+      "name": "唐代",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "唐诗的高峰。可先读选本，再进名家，最后入全库。",
+      "why": "唐是多数人真正开始爱诗的时代。",
+      "mode": "era-hub",
+      "entry": [
+        "tang300",
+        "qianjiashi"
+      ],
+      "masters": [
+        "master-quan-tang-李白",
+        "master-quan-tang-杜甫",
+        "master-quan-tang-白居易",
+        "master-quan-tang-王維",
+        "master-quan-tang-孟浩然",
+        "master-quan-tang-王昌齡",
+        "master-quan-tang-劉禹錫",
+        "master-quan-tang-杜牧",
+        "master-quan-tang-李商隱",
+        "master-quan-tang-韓愈",
+        "master-quan-tang-岑參",
+        "master-quan-tang-柳宗元"
+      ],
+      "corpus": "quan-tang",
+      "count": 57607
+    },
+    "era-wudai": {
+      "id": "era-wudai",
+      "name": "五代",
+      "era": "五代",
+      "form": "词",
+      "blurb": "词体成熟前夜。",
+      "why": "从花间到南唐，词开始写心里话。",
+      "mode": "bundle",
+      "children": [
+        "huajian",
+        "nantang"
+      ],
+      "count": 542
+    },
+    "era-song": {
+      "id": "era-song",
+      "name": "宋代",
+      "era": "宋",
+      "form": "诗词",
+      "blurb": "诗与词并盛。词可先读三百首，也可进名家专架。",
+      "why": "宋人把日常与哲思都写进了诗词。",
+      "mode": "era-hub",
+      "entry": [
+        "song300"
+      ],
+      "masters": [
+        "master-quan-song-ci-苏轼",
+        "master-quan-song-ci-李清照",
+        "master-quan-song-ci-辛弃疾",
+        "master-quan-song-ci-柳永",
+        "master-quan-song-ci-欧阳修",
+        "master-quan-song-ci-秦观",
+        "master-quan-song-ci-姜夔",
+        "master-quan-song-ci-周邦彦",
+        "master-quan-song-shi-蘇軾",
+        "master-quan-song-shi-陸游",
+        "master-quan-song-shi-王安石"
+      ],
+      "corpus": "quan-song-ci",
+      "corpusAlt": "quan-song-shi",
+      "count": 275298
+    },
+    "era-yuan": {
+      "id": "era-yuan",
+      "name": "元代",
+      "era": "元",
+      "form": "曲",
+      "blurb": "曲唱人间，另开一体。",
+      "why": "想换一种节奏，来读元曲。",
+      "mode": "anthology",
+      "files": [
+        "data/元曲/yuanqu.json"
+      ],
+      "count": 11057
+    },
+    "era-qing": {
+      "id": "era-qing",
+      "name": "清代",
       "era": "清",
-      "blurb": "清水芙蓉，清朝第一词人。",
-      "mode": "single",
+      "form": "词",
+      "blurb": "纳兰一集，清水芙蓉。",
+      "why": "清词里最容易先爱上的一位。",
+      "mode": "anthology",
       "files": [
         "data/纳兰性德/纳兰性德诗集.json"
       ],
-      "count": 258,
-      "group": "精选"
+      "count": 258
     },
-    {
+    "master-quan-tang-李白": {
+      "id": "master-quan-tang-李白",
+      "name": "李白",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "天上谪仙，酒与月与远方。",
+      "why": "专架阅读，只看李白的作品。",
+      "mode": "author",
+      "author": "李白",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.0.json",
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.2000.json",
+        "data/全唐诗/poet.tang.7000.json",
+        "data/全唐诗/poet.tang.8000.json",
+        "data/全唐诗/poet.tang.43000.json",
+        "data/全唐诗/poet.tang.48000.json",
+        "data/全唐诗/poet.tang.49000.json",
+        "data/全唐诗/poet.tang.51000.json",
+        "data/全唐诗/poet.tang.52000.json"
+      ],
+      "count": 1207
+    },
+    "master-quan-tang-杜甫": {
+      "id": "master-quan-tang-杜甫",
+      "name": "杜甫",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "诗史与家国，沉郁顿挫。",
+      "why": "专架阅读，只看杜甫的作品。",
+      "mode": "author",
+      "author": "杜甫",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.0.json",
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.2000.json",
+        "data/全唐诗/poet.tang.10000.json",
+        "data/全唐诗/poet.tang.11000.json",
+        "data/全唐诗/poet.tang.12000.json",
+        "data/全唐诗/poet.tang.43000.json",
+        "data/全唐诗/poet.tang.48000.json",
+        "data/全唐诗/poet.tang.51000.json",
+        "data/全唐诗/poet.tang.52000.json"
+      ],
+      "count": 1489
+    },
+    "master-quan-tang-白居易": {
+      "id": "master-quan-tang-白居易",
+      "name": "白居易",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "晓畅如话，长歌也动人。",
+      "why": "专架阅读，只看白居易的作品。",
+      "mode": "author",
+      "author": "白居易",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.2000.json",
+        "data/全唐诗/poet.tang.21000.json",
+        "data/全唐诗/poet.tang.22000.json",
+        "data/全唐诗/poet.tang.23000.json",
+        "data/全唐诗/poet.tang.24000.json",
+        "data/全唐诗/poet.tang.43000.json",
+        "data/全唐诗/poet.tang.48000.json",
+        "data/全唐诗/poet.tang.49000.json",
+        "data/全唐诗/poet.tang.50000.json",
+        "data/全唐诗/poet.tang.51000.json",
+        "data/全唐诗/poet.tang.53000.json"
+      ],
+      "count": 3009
+    },
+    "master-quan-tang-王維": {
+      "id": "master-quan-tang-王維",
+      "name": "王维",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "诗中有画，空山新雨。",
+      "why": "专架阅读，只看王维的作品。",
+      "mode": "author",
+      "author": "王維",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.0.json",
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.2000.json",
+        "data/全唐诗/poet.tang.5000.json",
+        "data/全唐诗/poet.tang.6000.json",
+        "data/全唐诗/poet.tang.49000.json",
+        "data/全唐诗/poet.tang.52000.json"
+      ],
+      "count": 403
+    },
+    "master-quan-tang-孟浩然": {
+      "id": "master-quan-tang-孟浩然",
+      "name": "孟浩然",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "山水清音，隐者之风。",
+      "why": "专架阅读，只看孟浩然的作品。",
+      "mode": "author",
+      "author": "孟浩然",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.7000.json",
+        "data/全唐诗/poet.tang.50000.json",
+        "data/全唐诗/poet.tang.52000.json"
+      ],
+      "count": 274
+    },
+    "master-quan-tang-王昌齡": {
+      "id": "master-quan-tang-王昌齡",
+      "name": "王昌龄",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "七绝圣手，边塞与宫怨。",
+      "why": "专架阅读，只看王昌龄的作品。",
+      "mode": "author",
+      "author": "王昌齡",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.0.json",
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.6000.json",
+        "data/全唐诗/poet.tang.48000.json",
+        "data/全唐诗/poet.tang.49000.json",
+        "data/全唐诗/poet.tang.50000.json",
+        "data/全唐诗/poet.tang.51000.json",
+        "data/全唐诗/poet.tang.52000.json"
+      ],
+      "count": 222
+    },
+    "master-quan-tang-劉禹錫": {
+      "id": "master-quan-tang-劉禹錫",
+      "name": "刘禹锡",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "秋风庭树，诗豪之气。",
+      "why": "专架阅读，只看刘禹锡的作品。",
+      "mode": "author",
+      "author": "劉禹錫",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.2000.json",
+        "data/全唐诗/poet.tang.18000.json",
+        "data/全唐诗/poet.tang.19000.json",
+        "data/全唐诗/poet.tang.43000.json",
+        "data/全唐诗/poet.tang.48000.json",
+        "data/全唐诗/poet.tang.49000.json",
+        "data/全唐诗/poet.tang.51000.json",
+        "data/全唐诗/poet.tang.53000.json"
+      ],
+      "count": 886
+    },
+    "master-quan-tang-杜牧": {
+      "id": "master-quan-tang-杜牧",
+      "name": "杜牧",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "俊爽拗峭，咏史含情。",
+      "why": "专架阅读，只看杜牧的作品。",
+      "mode": "author",
+      "author": "杜牧",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.28000.json",
+        "data/全唐诗/poet.tang.43000.json",
+        "data/全唐诗/poet.tang.48000.json",
+        "data/全唐诗/poet.tang.49000.json",
+        "data/全唐诗/poet.tang.50000.json",
+        "data/全唐诗/poet.tang.51000.json",
+        "data/全唐诗/poet.tang.53000.json"
+      ],
+      "count": 544
+    },
+    "master-quan-tang-李商隱": {
+      "id": "master-quan-tang-李商隱",
+      "name": "李商隐",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "深情绵邈，无题最难解。",
+      "why": "专架阅读，只看李商隐的作品。",
+      "mode": "author",
+      "author": "李商隱",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.2000.json",
+        "data/全唐诗/poet.tang.29000.json",
+        "data/全唐诗/poet.tang.50000.json",
+        "data/全唐诗/poet.tang.51000.json",
+        "data/全唐诗/poet.tang.53000.json"
+      ],
+      "count": 616
+    },
+    "master-quan-tang-韓愈": {
+      "id": "master-quan-tang-韓愈",
+      "name": "韩愈",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "文起八代，诗亦硬语。",
+      "why": "专架阅读，只看韩愈的作品。",
+      "mode": "author",
+      "author": "韓愈",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.17000.json",
+        "data/全唐诗/poet.tang.18000.json",
+        "data/全唐诗/poet.tang.43000.json",
+        "data/全唐诗/poet.tang.51000.json",
+        "data/全唐诗/poet.tang.53000.json"
+      ],
+      "count": 439
+    },
+    "master-quan-tang-岑參": {
+      "id": "master-quan-tang-岑參",
+      "name": "岑参",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "轮台热海，边塞奇景。",
+      "why": "专架阅读，只看岑参的作品。",
+      "mode": "author",
+      "author": "岑參",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.0.json",
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.9000.json",
+        "data/全唐诗/poet.tang.52000.json"
+      ],
+      "count": 411
+    },
+    "master-quan-tang-柳宗元": {
+      "id": "master-quan-tang-柳宗元",
+      "name": "柳宗元",
+      "era": "唐",
+      "form": "诗",
+      "blurb": "清峭淡远，永州一脉。",
+      "why": "专架阅读，只看柳宗元的作品。",
+      "mode": "author",
+      "author": "柳宗元",
+      "corpus": "quan-tang",
+      "files": [
+        "data/全唐诗/poet.tang.0.json",
+        "data/全唐诗/poet.tang.1000.json",
+        "data/全唐诗/poet.tang.18000.json",
+        "data/全唐诗/poet.tang.53000.json"
+      ],
+      "count": 202
+    },
+    "master-quan-song-ci-苏轼": {
+      "id": "master-quan-song-ci-苏轼",
+      "name": "苏轼·词",
+      "era": "宋",
+      "form": "词",
+      "blurb": "豪放与深情，一词一天地。",
+      "why": "专架阅读，只看苏轼·词的作品。",
+      "mode": "author",
+      "author": "苏轼",
+      "corpus": "quan-song-ci",
+      "files": [
+        "data/宋词/ci.song.1000.json",
+        "data/宋词/ci.song.20000.json"
+      ],
+      "count": 362
+    },
+    "master-quan-song-ci-李清照": {
+      "id": "master-quan-song-ci-李清照",
+      "name": "李清照",
+      "era": "宋",
+      "form": "词",
+      "blurb": "易安体，愁与寻寻觅觅。",
+      "why": "专架阅读，只看李清照的作品。",
+      "mode": "author",
+      "author": "李清照",
+      "corpus": "quan-song-ci",
+      "files": [
+        "data/宋词/ci.song.6000.json",
+        "data/宋词/ci.song.20000.json"
+      ],
+      "count": 52
+    },
+    "master-quan-song-ci-辛弃疾": {
+      "id": "master-quan-song-ci-辛弃疾",
+      "name": "辛弃疾",
+      "era": "宋",
+      "form": "词",
+      "blurb": "挑灯看剑，词中有烈士。",
+      "why": "专架阅读，只看辛弃疾的作品。",
+      "mode": "author",
+      "author": "辛弃疾",
+      "corpus": "quan-song-ci",
+      "files": [
+        "data/宋词/ci.song.3000.json",
+        "data/宋词/ci.song.11000.json",
+        "data/宋词/ci.song.20000.json"
+      ],
+      "count": 629
+    },
+    "master-quan-song-ci-柳永": {
+      "id": "master-quan-song-ci-柳永",
+      "name": "柳永",
+      "era": "宋",
+      "form": "词",
+      "blurb": "凡有井水处，皆能歌柳词。",
+      "why": "专架阅读，只看柳永的作品。",
+      "mode": "author",
+      "author": "柳永",
+      "corpus": "quan-song-ci",
+      "files": [
+        "data/宋词/ci.song.0.json"
+      ],
+      "count": 213
+    },
+    "master-quan-song-ci-欧阳修": {
+      "id": "master-quan-song-ci-欧阳修",
+      "name": "欧阳修",
+      "era": "宋",
+      "form": "词",
+      "blurb": "疏隽深婉，北宋气象。",
+      "why": "专架阅读，只看欧阳修的作品。",
+      "mode": "author",
+      "author": "欧阳修",
+      "corpus": "quan-song-ci",
+      "files": [
+        "data/宋词/ci.song.0.json"
+      ],
+      "count": 242
+    },
+    "master-quan-song-ci-秦观": {
+      "id": "master-quan-song-ci-秦观",
+      "name": "秦观",
+      "era": "宋",
+      "form": "词",
+      "blurb": "婉约正宗，凄清如水。",
+      "why": "专架阅读，只看秦观的作品。",
+      "mode": "author",
+      "author": "秦观",
+      "corpus": "quan-song-ci",
+      "files": [
+        "data/宋词/ci.song.3000.json"
+      ],
+      "count": 90
+    },
+    "master-quan-song-ci-姜夔": {
+      "id": "master-quan-song-ci-姜夔",
+      "name": "姜夔",
+      "era": "宋",
+      "form": "词",
+      "blurb": "清空骚雅，白石道人。",
+      "why": "专架阅读，只看姜夔的作品。",
+      "mode": "author",
+      "author": "姜夔",
+      "corpus": "quan-song-ci",
+      "files": [
+        "data/宋词/ci.song.12000.json"
+      ],
+      "count": 87
+    },
+    "master-quan-song-ci-周邦彦": {
+      "id": "master-quan-song-ci-周邦彦",
+      "name": "周邦彦",
+      "era": "宋",
+      "form": "词",
+      "blurb": "格律精严，词家正宗。",
+      "why": "专架阅读，只看周邦彦的作品。",
+      "mode": "author",
+      "author": "周邦彦",
+      "corpus": "quan-song-ci",
+      "files": [
+        "data/宋词/ci.song.4000.json"
+      ],
+      "count": 186
+    },
+    "master-quan-song-shi-蘇軾": {
+      "id": "master-quan-song-shi-蘇軾",
+      "name": "苏轼·诗",
+      "era": "宋",
+      "form": "诗",
+      "blurb": "诗里的东坡，豁达与日常。",
+      "why": "专架阅读，只看苏轼·诗的作品。",
+      "mode": "author",
+      "author": "蘇軾",
+      "corpus": "quan-song-shi",
+      "files": [
+        "data/全唐诗/poet.song.44000.json",
+        "data/全唐诗/poet.song.45000.json",
+        "data/全唐诗/poet.song.46000.json"
+      ],
+      "count": 2824
+    },
+    "master-quan-song-shi-陸游": {
+      "id": "master-quan-song-shi-陸游",
+      "name": "陆游",
+      "era": "宋",
+      "form": "诗",
+      "blurb": "示儿与剑南，家国之念。",
+      "why": "专架阅读，只看陆游的作品。",
+      "mode": "author",
+      "author": "陸游",
+      "corpus": "quan-song-shi",
+      "files": [
+        "data/全唐诗/poet.song.127000.json",
+        "data/全唐诗/poet.song.128000.json",
+        "data/全唐诗/poet.song.129000.json",
+        "data/全唐诗/poet.song.130000.json",
+        "data/全唐诗/poet.song.131000.json",
+        "data/全唐诗/poet.song.132000.json",
+        "data/全唐诗/poet.song.133000.json",
+        "data/全唐诗/poet.song.134000.json",
+        "data/全唐诗/poet.song.135000.json",
+        "data/全唐诗/poet.song.136000.json"
+      ],
+      "count": 9271
+    },
+    "master-quan-song-shi-王安石": {
+      "id": "master-quan-song-shi-王安石",
+      "name": "王安石",
+      "era": "宋",
+      "form": "诗",
+      "blurb": "半山诗，瘦硬通神。",
+      "why": "专架阅读，只看王安石的作品。",
+      "mode": "author",
+      "author": "王安石",
+      "corpus": "quan-song-shi",
+      "files": [
+        "data/全唐诗/poet.song.31000.json",
+        "data/全唐诗/poet.song.32000.json",
+        "data/全唐诗/poet.song.33000.json"
+      ],
+      "count": 1740
+    },
+    "form-shi": {
+      "id": "form-shi",
+      "name": "诗",
+      "form": "诗",
+      "blurb": "从诗经、唐诗到宋诗。",
+      "why": "想按「诗」这一体系统读。",
+      "mode": "form-hub",
+      "entry": [
+        "shijing",
+        "tang300",
+        "qianjiashi"
+      ],
+      "count": 311855
+    },
+    "form-ci": {
+      "id": "form-ci",
+      "name": "词",
+      "form": "词",
+      "blurb": "花间、南唐、两宋。",
+      "why": "长短句另有一套读法。",
+      "mode": "form-hub",
+      "entry": [
+        "song300",
+        "huajian",
+        "nantang"
+      ],
+      "count": 21050
+    },
+    "form-qu": {
+      "id": "form-qu",
+      "name": "曲",
+      "form": "曲",
+      "blurb": "元曲一库。",
+      "why": "诗词语尽处，听曲。",
+      "mode": "anthology",
+      "files": [
+        "data/元曲/yuanqu.json"
+      ],
+      "count": 11057
+    },
+    "shuimo": {
       "id": "shuimo",
       "name": "水墨唐诗",
       "era": "唐",
-      "blurb": "画意诗心，短章小品。",
-      "mode": "single",
+      "form": "诗",
+      "blurb": "画意诗心的短章。",
+      "why": "想读得短、读得静。",
+      "mode": "anthology",
       "files": [
         "data/水墨唐诗/shuimotangshi.json"
       ],
-      "count": 176,
-      "group": "精选"
+      "count": 176
     },
-    {
+    "quan-tang": {
       "id": "quan-tang",
       "name": "全唐诗",
       "era": "唐",
-      "blurb": "五万七千余首，按卷翻阅或按作者查找。",
-      "mode": "shards",
+      "form": "诗",
+      "blurb": "全唐诗篇目繁多。可先找名家，或按检索入内，也可随手翻读。",
+      "why": "像图书馆的闭架大库：都在，但不建议一进门就整排搬。",
+      "mode": "corpus",
       "files": [
         "data/全唐诗/poet.tang.0.json",
         "data/全唐诗/poet.tang.1000.json",
@@ -198,16 +867,17 @@
         "data/全唐诗/poet.tang.57000.json"
       ],
       "count": 57607,
-      "group": "全库",
       "authorIndex": "indexes/authors-tang.json",
-      "volumeLabel": "卷"
+      "corpus": "quan-tang"
     },
-    {
+    "quan-song-shi": {
       "id": "quan-song-shi",
       "name": "全宋诗",
       "era": "宋",
-      "blurb": "宋人诗作分卷全库，体量较大。",
-      "mode": "shards",
+      "form": "诗",
+      "blurb": "全宋诗篇目繁多。可先找名家，或按检索入内，也可随手翻读。",
+      "why": "像图书馆的闭架大库：都在，但不建议一进门就整排搬。",
+      "mode": "corpus",
       "files": [
         "data/全唐诗/poet.song.0.json",
         "data/全唐诗/poet.song.1000.json",
@@ -466,16 +1136,17 @@
         "data/全唐诗/poet.song.254000.json"
       ],
       "count": 254248,
-      "group": "全库",
       "authorIndex": "indexes/authors-song-shi.json",
-      "volumeLabel": "卷"
+      "corpus": "quan-song-shi"
     },
-    {
+    "quan-song-ci": {
       "id": "quan-song-ci",
       "name": "全宋词",
       "era": "宋",
-      "blurb": "两万余首词，可按词牌与作者检索。",
-      "mode": "shards",
+      "form": "词",
+      "blurb": "全宋词篇目繁多。可先找名家，或按检索入内，也可随手翻读。",
+      "why": "像图书馆的闭架大库：都在，但不建议一进门就整排搬。",
+      "mode": "corpus",
       "files": [
         "data/宋词/ci.song.0.json",
         "data/宋词/ci.song.1000.json",
@@ -501,22 +1172,61 @@
         "data/宋词/ci.song.21000.json"
       ],
       "count": 21050,
-      "group": "全库",
       "authorIndex": "indexes/authors-ci.json",
-      "volumeLabel": "卷"
+      "corpus": "quan-song-ci"
+    }
+  },
+  "corpora": {
+    "quan-tang": {
+      "id": "quan-tang",
+      "name": "全唐诗",
+      "count": 57607,
+      "authorIndex": "indexes/authors-tang.json"
+    },
+    "quan-song-shi": {
+      "id": "quan-song-shi",
+      "name": "全宋诗",
+      "count": 254248,
+      "authorIndex": "indexes/authors-song-shi.json"
+    },
+    "quan-song-ci": {
+      "id": "quan-song-ci",
+      "name": "全宋词",
+      "count": 21050,
+      "authorIndex": "indexes/authors-ci.json"
+    }
+  },
+  "learningPath": [
+    {
+      "step": 1,
+      "title": "先读源头",
+      "book": "shijing",
+      "note": "认识诗从何而来"
     },
     {
-      "id": "yuanqu",
-      "name": "元曲",
-      "era": "元",
-      "blurb": "散曲与剧曲唱词合集。",
-      "mode": "single",
-      "files": [
-        "data/元曲/yuanqu.json"
-      ],
-      "count": 11057,
-      "group": "全库"
+      "step": 2,
+      "title": "建立语感",
+      "book": "tang300",
+      "note": "每天一首，不求多"
+    },
+    {
+      "step": 3,
+      "title": "接触词体",
+      "book": "song300",
+      "note": "体会长短句的转折"
+    },
+    {
+      "step": 4,
+      "title": "跟着名家",
+      "book": "master-quan-tang-李白",
+      "note": "专架深读一位诗人"
+    },
+    {
+      "step": 5,
+      "title": "按需入全库",
+      "book": "quan-tang",
+      "note": "有了坐标，再进大库不迷路"
     }
   ],
-  "totalPoems": 346153
+  "inventoryNote": "选本与全库会有篇目重叠，如同图书馆里「选本 + 全集」并存，这是正常的。"
 }

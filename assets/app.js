@@ -1,24 +1,26 @@
-/* 中文诗歌 · 阅读站 */
+/* 中文诗歌 · 诗词图书馆 */
 const STORAGE_FAVS = "zhongwen-shige-favs-v1"
 const STORAGE_RECENT = "zhongwen-shige-recent-v1"
+const STORAGE_PROGRESS = "zhongwen-shige-progress-v1"
 
 const state = {
   library: null,
   dailyPool: null,
   view: "today",
-  shelf: null,
+  book: null,
   poems: [],
   filtered: [],
-  volume: 0,
+  batch: 0,
   page: 1,
-  pageSize: 24,
+  pageSize: 20,
   query: "",
   current: null,
-  authorIndex: null,
-  status: ""
+  status: "",
+  floorId: null
 }
 
 const app = () => document.getElementById("app")
+const $ = (id) => document.getElementById(id)
 
 function encodePath(path) {
   return path.split("/").map(encodeURIComponent).join("/")
@@ -26,113 +28,8 @@ function encodePath(path) {
 
 async function fetchJson(path) {
   const res = await fetch("./" + encodePath(path))
-  if (!res.ok) throw new Error("加载失败 " + res.status)
+  if (!res.ok) throw new Error("加载失败")
   return res.json()
-}
-
-function normalize(item, shelfName, source) {
-  const linesRaw = item.paragraphs || item.content || []
-  const lines = Array.isArray(linesRaw) ? linesRaw.filter(Boolean) : [String(linesRaw)]
-  const title = item.title || item.rhythmic || item.chapter || "无题"
-  const author = item.author || "佚名"
-  const rhythmic = item.rhythmic || ""
-  const id = item.id || [shelfName, source, title, author, lines[0] || ""].join("|")
-  return {
-    id,
-    title,
-    author,
-    rhythmic,
-    lines,
-    shelf: shelfName || "",
-    source: source || "",
-    tags: item.tags || [],
-    chapter: item.chapter || "",
-    section: item.section || ""
-  }
-}
-
-function isReadablePoem(p) {
-  return p && Array.isArray(p.lines) && p.lines.length > 0 && p.lines.some((l) => String(l).trim())
-}
-
-function loadStore(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key) || "[]")
-  } catch {
-    return []
-  }
-}
-
-function saveStore(key, value) {
-  localStorage.setItem(key, JSON.stringify(value))
-}
-
-function isFav(id) {
-  return loadStore(STORAGE_FAVS).some((x) => x.id === id)
-}
-
-function toggleFav(poem) {
-  const list = loadStore(STORAGE_FAVS)
-  const i = list.findIndex((x) => x.id === poem.id)
-  if (i >= 0) list.splice(i, 1)
-  else list.unshift({
-    id: poem.id,
-    title: poem.title,
-    author: poem.author,
-    rhythmic: poem.rhythmic,
-    lines: poem.lines,
-    shelf: poem.shelf
-  })
-  saveStore(STORAGE_FAVS, list.slice(0, 500))
-}
-
-function pushRecent(poem) {
-  const list = loadStore(STORAGE_RECENT).filter((x) => x.id !== poem.id)
-  list.unshift({
-    id: poem.id,
-    title: poem.title,
-    author: poem.author,
-    rhythmic: poem.rhythmic,
-    lines: poem.lines,
-    shelf: poem.shelf
-  })
-  saveStore(STORAGE_RECENT, list.slice(0, 30))
-}
-
-function dayIndex(len) {
-  const d = new Date()
-  const key = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate()
-  return key % Math.max(len, 1)
-}
-
-function setNav(active) {
-  document.querySelectorAll(".nav a").forEach((a) => {
-    a.classList.toggle("active", a.dataset.nav === active)
-  })
-}
-
-function route() {
-  const hash = location.hash.replace(/^#\/?/, "")
-  const [name, a, b] = hash.split("/")
-  if (!name || name === "today") return renderToday()
-  if (name === "library") return renderLibrary()
-  if (name === "shelf" && a) return openShelf(a, b ? Number(b) : 0)
-  if (name === "read") return renderReader()
-  if (name === "search") return renderSearch()
-  if (name === "favs") return renderFavs()
-  return renderToday()
-}
-
-function readingBlock(poem, opts = {}) {
-  const meta = [poem.author, poem.rhythmic, poem.shelf].filter(Boolean).join(" · ")
-  return `
-    <article class="reading">
-      <h1 class="title">${escapeHtml(poem.title)}</h1>
-      <div class="meta">${escapeHtml(meta)}</div>
-      <div class="verse">${poem.lines.map((l) => `<p>${escapeHtml(l)}</p>`).join("")}</div>
-      ${opts.actions || ""}
-    </article>
-  `
 }
 
 function escapeHtml(s) {
@@ -143,39 +40,156 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;")
 }
 
+function normalize(item, shelfName, source) {
+  const linesRaw = item.paragraphs || item.content || []
+  const lines = Array.isArray(linesRaw) ? linesRaw.filter(Boolean) : [String(linesRaw)]
+  const title = item.title || item.rhythmic || item.chapter || "无题"
+  const author = item.author || "佚名"
+  const rhythmic = item.rhythmic || ""
+  const id = item.id || [shelfName, source, title, author, lines[0] || ""].join("|")
+  return { id, title, author, rhythmic, lines, shelf: shelfName || "", source: source || "" }
+}
+
+function isReadablePoem(p) {
+  return p && p.lines && p.lines.some((l) => String(l).trim())
+}
+
+function loadStore(key) {
+  try { return JSON.parse(localStorage.getItem(key) || "[]") } catch { return [] }
+}
+function saveStore(key, value) { localStorage.setItem(key, JSON.stringify(value)) }
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_PROGRESS) || "{}") } catch { return {} }
+}
+function markProgress(bookId) {
+  const p = loadProgress()
+  p[bookId] = Date.now()
+  localStorage.setItem(STORAGE_PROGRESS, JSON.stringify(p))
+}
+function isFav(id) { return loadStore(STORAGE_FAVS).some((x) => x.id === id) }
+
+function toggleFav(poem) {
+  const list = loadStore(STORAGE_FAVS)
+  const i = list.findIndex((x) => x.id === poem.id)
+  if (i >= 0) list.splice(i, 1)
+  else list.unshift(slim(poem))
+  saveStore(STORAGE_FAVS, list.slice(0, 500))
+}
+
+function slim(poem) {
+  return {
+    id: poem.id,
+    title: poem.title,
+    author: poem.author,
+    rhythmic: poem.rhythmic,
+    lines: poem.lines,
+    shelf: poem.shelf
+  }
+}
+
+function pushRecent(poem) {
+  const list = loadStore(STORAGE_RECENT).filter((x) => x.id !== poem.id)
+  list.unshift(slim(poem))
+  saveStore(STORAGE_RECENT, list.slice(0, 40))
+}
+
+function dayIndex(len) {
+  const d = new Date()
+  return (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate()) % Math.max(len, 1)
+}
+
+function setNav(active) {
+  document.querySelectorAll(".nav a").forEach((a) => {
+    a.classList.toggle("active", a.dataset.nav === active)
+  })
+}
+
 async function ensureLibrary() {
   if (!state.library) state.library = await fetchJson("library.json")
   return state.library
 }
-
 async function ensureDaily() {
   if (!state.dailyPool) state.dailyPool = await fetchJson("daily-pool.json")
   return state.dailyPool
 }
 
+function bookById(id) {
+  return state.library && state.library.books[id]
+}
+
+function route() {
+  const hash = location.hash.replace(/^#\/?/, "")
+  const parts = hash.split("/").filter(Boolean)
+  const name = parts[0] || "today"
+  if (name === "today" || !parts.length) return renderToday()
+  if (name === "library") {
+    if (parts[1] === "floor" && parts[2]) return renderFloor(parts[2])
+    if (parts[1] === "hub" && parts[2]) return renderHub(parts[2])
+    if (parts[1] === "book" && parts[2]) return openBook(parts[2], Number(parts[3] || 0))
+    return renderLibraryHome()
+  }
+  if (name === "read") return renderReader()
+  if (name === "search") return renderSearch()
+  if (name === "favs") return renderFavs()
+  return renderToday()
+}
+
+function readingBlock(poem, actions = "") {
+  const meta = [poem.author, poem.rhythmic, poem.shelf].filter(Boolean).join(" · ")
+  return `
+    <article class="reading">
+      <h1 class="title">${escapeHtml(poem.title)}</h1>
+      <div class="meta">${escapeHtml(meta)}</div>
+      <div class="verse">${poem.lines.map((l) => `<p>${escapeHtml(l)}</p>`).join("")}</div>
+      ${actions}
+    </article>
+  `
+}
+
+/* ========== 今日 ========== */
 async function renderToday() {
   setNav("today")
   state.view = "today"
-  app().innerHTML = `<p class="status-line">正在准备今日一诗…</p>`
+  app().innerHTML = `<p class="status-line">正在开卷…</p>`
   try {
-    const pool = await ensureDaily()
+    const [pool, lib] = await Promise.all([ensureDaily(), ensureLibrary()])
     const poem = pool[dayIndex(pool.length)]
     if (!poem.id) poem.id = ["daily", poem.title, poem.author, poem.lines[0]].join("|")
     state.current = poem
     const fav = isFav(poem.id)
+    const path = lib.learningPath || []
     app().innerHTML = `
       <section class="today">
         <p class="today-kicker">今日一诗</p>
-        ${readingBlock(poem, {
-          actions: `
-            <div class="actions">
-              <button class="btn soft" type="button" id="btnAnother">换一首</button>
-              <button class="btn ghost ${fav ? "fav-on" : ""}" type="button" id="btnFav">${fav ? "已收藏" : "收藏"}</button>
-              <a class="btn" href="#/library">进入书库</a>
-            </div>
-          `
-        })}
-        <p class="hint">选自精选读本 · 可收藏，明日另开一卷</p>
+        ${readingBlock(poem, `
+          <div class="actions">
+            <button class="btn soft" type="button" id="btnAnother">换一首</button>
+            <button class="btn ghost ${fav ? "fav-on" : ""}" type="button" id="btnFav">${fav ? "已在书架" : "放入书架"}</button>
+            <a class="btn" href="#/library">去图书馆</a>
+          </div>
+        `)}
+        <p class="hint">选自入门读本 · 喜欢就放进「我的书架」</p>
+
+        <div class="path-card">
+          <div class="path-head">
+            <h2>学习路径</h2>
+            <p>不知道从哪读起时，按这五步走</p>
+          </div>
+          <ol class="path-steps">
+            ${path.map((s) => {
+              const b = bookById(s.book)
+              return `
+                <li>
+                  <button type="button" class="path-step" data-book="${s.book}">
+                    <span class="n">${s.step}</span>
+                    <span class="t">${escapeHtml(s.title)}</span>
+                    <span class="d">${escapeHtml(s.note)}${b ? " · " + escapeHtml(b.name) : ""}</span>
+                  </button>
+                </li>
+              `
+            }).join("")}
+          </ol>
+        </div>
       </section>
     `
     $("btnAnother").onclick = () => {
@@ -183,121 +197,272 @@ async function renderToday() {
       if (!next.id) next.id = ["daily", next.title, next.author, next.lines[0]].join("|")
       state.current = next
       location.hash = "#/read"
-      renderReader()
     }
-    $("btnFav").onclick = () => {
-      toggleFav(poem)
-      renderToday()
-    }
+    $("btnFav").onclick = () => { toggleFav(poem); renderToday() }
+    app().querySelectorAll(".path-step").forEach((btn) => {
+      btn.onclick = () => goBook(btn.dataset.book)
+    })
   } catch (e) {
-    app().innerHTML = `<p class="empty">今日一诗加载失败：${escapeHtml(e.message)}</p>`
+    app().innerHTML = `<p class="empty">开卷失败，请稍后刷新</p>`
   }
 }
 
-async function renderLibrary() {
+function goBook(id) {
+  const b = bookById(id)
+  if (!b) return
+  if (b.mode === "era-hub" || b.mode === "form-hub" || b.mode === "bundle") {
+    location.hash = `#/library/hub/${id}`
+  } else {
+    location.hash = `#/library/book/${id}`
+  }
+}
+
+/* ========== 图书馆总览 ========== */
+async function renderLibraryHome() {
   setNav("library")
+  state.view = "library"
   const lib = await ensureLibrary()
-  const groups = ["精选", "全库"]
+  const progress = loadProgress()
   app().innerHTML = `
     <div class="section-head">
-      <h2>书库</h2>
-      <p>共 ${lib.totalPoems.toLocaleString("zh-CN")} 首可读篇目</p>
+      <h2>图书馆</h2>
+      <p>按阅读习惯分楼层，不按文件堆放</p>
     </div>
-    ${groups.map((g) => {
-      const shelves = lib.shelves.filter((s) => s.group === g)
-      return `
-        <div class="group-label">${g}</div>
-        <div class="shelf-grid">
-          ${shelves.map((s, i) => `
-            <div class="shelf" data-id="${s.id}" style="animation-delay:${i * 40}ms">
-              <div class="era">${escapeHtml(s.era || "")}</div>
-              <h3>${escapeHtml(s.name)}</h3>
-              <p>${escapeHtml(s.blurb || "")}</p>
-              <div class="count">${s.count.toLocaleString("zh-CN")} 首</div>
-            </div>
-          `).join("")}
-        </div>
-      `
-    }).join("")}
+    <p class="guide">${escapeHtml(lib.inventoryNote || "")}</p>
+    <div class="floor-map">
+      ${lib.floors.map((f, i) => `
+        <a class="floor-card" href="#/library/floor/${f.id}" style="animation-delay:${i * 50}ms">
+          <div class="floor-no">0${i + 1}</div>
+          <div>
+            <h3>${escapeHtml(f.name)}</h3>
+            <p>${escapeHtml(f.guide)}</p>
+          </div>
+        </a>
+      `).join("")}
+    </div>
+    <div class="group-label">最近在读</div>
+    <div class="chip-row" id="recentBooks"></div>
   `
-  app().querySelectorAll(".shelf").forEach((el) => {
-    el.onclick = () => { location.hash = `#/shelf/${el.dataset.id}` }
+  const recentIds = Object.entries(progress)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([id]) => id)
+  const box = $("recentBooks")
+  if (!recentIds.length) {
+    box.innerHTML = `<span class="status-line">还没有阅读记录。从「入门之路」或上方学习路径开始。</span>`
+  } else {
+    box.innerHTML = recentIds.map((id) => {
+      const b = bookById(id)
+      if (!b) return ""
+      return `<button class="chip" type="button" data-id="${id}">${escapeHtml(b.name)}</button>`
+    }).join("")
+    box.querySelectorAll("button[data-id]").forEach((btn) => {
+      btn.onclick = () => goBook(btn.dataset.id)
+    })
+  }
+}
+
+async function renderFloor(floorId) {
+  setNav("library")
+  const lib = await ensureLibrary()
+  const floor = lib.floors.find((f) => f.id === floorId)
+  if (!floor) {
+    app().innerHTML = `<p class="empty">没有这一层</p>`
+    return
+  }
+  state.floorId = floorId
+
+  const renderRoom = (id) => {
+    const b = bookById(id)
+    if (!b) return ""
+    return `
+      <button type="button" class="shelf" data-id="${id}">
+        <div class="era">${escapeHtml([b.era, b.form].filter(Boolean).join(" · "))}</div>
+        <h3>${escapeHtml(b.name)}</h3>
+        <p>${escapeHtml(b.why || b.blurb || "")}</p>
+        <div class="count">${fmtCount(b.count)} 首可读</div>
+      </button>
+    `
+  }
+
+  let body = ""
+  if (floor.sections) {
+    body = floor.sections.map((sec) => `
+      <div class="group-label">${escapeHtml(sec.name)}</div>
+      <div class="shelf-grid">${sec.rooms.map(renderRoom).join("")}</div>
+    `).join("")
+  } else {
+    body = `<div class="shelf-grid">${(floor.rooms || []).map(renderRoom).join("")}</div>`
+  }
+
+  app().innerHTML = `
+    <div class="browse-bar">
+      <button class="btn ghost" type="button" id="backLib">图书馆</button>
+      <h1>${escapeHtml(floor.name)}</h1>
+    </div>
+    <p class="guide">${escapeHtml(floor.guide)}</p>
+    ${body}
+  `
+  $("backLib").onclick = () => { location.hash = "#/library" }
+  app().querySelectorAll(".shelf[data-id]").forEach((el) => {
+    el.onclick = () => goBook(el.dataset.id)
   })
 }
 
-async function openShelf(id, volume = 0) {
+async function renderHub(bookId) {
   setNav("library")
   const lib = await ensureLibrary()
-  const shelf = lib.shelves.find((s) => s.id === id)
-  if (!shelf) {
-    app().innerHTML = `<p class="empty">未找到该书</p>`
+  const b = bookById(bookId)
+  if (!b) {
+    app().innerHTML = `<p class="empty">未找到</p>`
     return
   }
-  state.shelf = shelf
-  state.volume = Number.isFinite(volume) ? volume : 0
+
+  const linkBook = (id, label) => {
+    const x = bookById(id)
+    if (!x) return ""
+    return `
+      <button type="button" class="shelf" data-id="${id}">
+        <div class="era">${escapeHtml(label || [x.era, x.form].filter(Boolean).join(" · "))}</div>
+        <h3>${escapeHtml(x.name)}</h3>
+        <p>${escapeHtml(x.why || x.blurb || "")}</p>
+        <div class="count">${fmtCount(x.count)} 首</div>
+      </button>
+    `
+  }
+
+  let sections = ""
+  if (b.mode === "bundle" || b.mode === "form-hub") {
+    const ids = b.children || b.entry || []
+    sections += `
+      <div class="group-label">建议从这里读</div>
+      <div class="shelf-grid">${ids.map((id) => linkBook(id)).join("")}</div>
+    `
+  }
+  if (b.mode === "era-hub") {
+    sections += `
+      <div class="hub-intro">
+        <p class="why">${escapeHtml(b.why || "")}</p>
+        <p>${escapeHtml(b.blurb || "")}</p>
+      </div>
+      <div class="group-label">① 先读选本</div>
+      <div class="shelf-grid">${(b.entry || []).map((id) => linkBook(id, "入门选本")).join("")}</div>
+      <div class="group-label">② 再跟名家</div>
+      <div class="shelf-grid">${(b.masters || []).map((id) => linkBook(id, "名家专架")).join("")}</div>
+      <div class="group-label">③ 需要时再进全库</div>
+      <div class="shelf-grid">
+        ${b.corpus ? linkBook(b.corpus, "闭架大库") : ""}
+        ${b.corpusAlt ? linkBook(b.corpusAlt, "闭架大库") : ""}
+      </div>
+    `
+  }
+
+  app().innerHTML = `
+    <div class="browse-bar">
+      <button class="btn ghost" type="button" id="back">返回</button>
+      <h1>${escapeHtml(b.name)}</h1>
+    </div>
+    ${sections}
+  `
+  $("back").onclick = () => history.back()
+  app().querySelectorAll(".shelf[data-id]").forEach((el) => {
+    el.onclick = () => goBook(el.dataset.id)
+  })
+}
+
+function fmtCount(n) {
+  if (!n && n !== 0) return "—"
+  return Number(n).toLocaleString("zh-CN")
+}
+
+/* ========== 打开一本书 ========== */
+async function openBook(bookId, batch = 0) {
+  setNav("library")
+  await ensureLibrary()
+  const book = bookById(bookId)
+  if (!book) {
+    app().innerHTML = `<p class="empty">未找到这本书</p>`
+    return
+  }
+  if (book.mode === "era-hub" || book.mode === "form-hub" || book.mode === "bundle") {
+    return renderHub(bookId)
+  }
+
+  state.book = book
+  state.batch = batch
   state.page = 1
   state.query = ""
-  state.authorIndex = null
-  app().innerHTML = `<p class="status-line">正在打开《${escapeHtml(shelf.name)}》…</p>`
+  markProgress(bookId)
+  app().innerHTML = `<p class="status-line">正在取书：《${escapeHtml(book.name)}》…</p>`
   try {
-    await loadShelfPoems(shelf, state.volume)
+    await loadBookPoems(book, batch)
     renderBrowse()
   } catch (e) {
-    app().innerHTML = `<p class="empty">${escapeHtml(e.message)}</p>`
+    app().innerHTML = `<p class="empty">取书失败，请稍后重试</p>`
   }
 }
 
-async function loadShelfPoems(shelf, volume) {
-  let files = shelf.files || []
-  if (shelf.mode === "shards") {
-    const idx = Math.min(Math.max(volume, 0), files.length - 1)
-    state.volume = idx
-    files = [files[idx]]
+async function loadBookPoems(book, batch) {
+  let files = book.files || []
+  const BATCH = 1
+  if (book.mode === "corpus") {
+    const start = Math.min(Math.max(batch, 0), Math.max(files.length - 1, 0))
+    state.batch = start
+    files = files.slice(start, start + BATCH)
   }
+
   const poems = []
   for (const file of files) {
     const data = await fetchJson(file)
     const arr = Array.isArray(data) ? data : []
     for (const item of arr) {
       if (!item || typeof item !== "object") continue
-      // skip author bios
       if ("desc" in item && "name" in item && !item.paragraphs && !item.content && !item.title) continue
-      const p = normalize(item, shelf.name, file)
+      if (book.mode === "author" && book.author) {
+        if (item.author !== book.author) continue
+      }
+      const p = normalize(item, book.name, file)
       if (isReadablePoem(p)) poems.push(p)
     }
   }
   state.poems = poems
   state.filtered = poems
-  state.status = shelf.mode === "shards"
-    ? `第 ${state.volume + 1} / ${shelf.files.length} ${shelf.volumeLabel || "卷"} · ${poems.length} 首`
-    : `共 ${poems.length} 首`
+  if (book.mode === "corpus") {
+    state.status = `随手翻到第 ${state.batch + 1} 迭 · 本迭 ${poems.length} 首（全书约 ${fmtCount(book.count)} 首）`
+  } else if (book.mode === "author") {
+    state.status = `${book.name}专架 · ${poems.length} 首`
+  } else {
+    state.status = `共 ${poems.length} 首`
+  }
 }
 
 function renderBrowse() {
-  const shelf = state.shelf
+  const book = state.book
   const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize))
   if (state.page > totalPages) state.page = totalPages
   const start = (state.page - 1) * state.pageSize
   const pageItems = state.filtered.slice(start, start + state.pageSize)
 
-  const volumeControls = shelf.mode === "shards" ? `
-    <div class="chip-row" id="volRow">
-      <button class="chip" type="button" data-vol="-1">上一卷</button>
-      <span class="status-line" style="margin:0">第 ${state.volume + 1} / ${shelf.files.length} 卷</span>
-      <button class="chip" type="button" data-vol="1">下一卷</button>
-      ${shelf.authorIndex ? `<button class="chip" type="button" id="btnAuthorFind">按作者找</button>` : ""}
+  const corpusNav = book.mode === "corpus" ? `
+    <div class="chip-row">
+      <button class="chip" type="button" id="prevBatch" ${state.batch <= 0 ? "disabled" : ""}>再往前翻</button>
+      <button class="chip" type="button" id="nextBatch" ${state.batch >= book.files.length - 1 ? "disabled" : ""}>继续往后翻</button>
+      <button class="chip" type="button" id="findAuthor">找一位作者</button>
+      <a class="chip" href="#/search">去找诗</a>
     </div>
+    <p class="guide">全库很大，不必一次读完。像在闭架库里抽一迭书，慢慢翻即可。</p>
   ` : ""
 
   app().innerHTML = `
     <div class="browse-bar">
-      <button class="btn ghost" type="button" id="backLib">书库</button>
-      <h1>${escapeHtml(shelf.name)}</h1>
+      <button class="btn ghost" type="button" id="back">返回</button>
+      <h1>${escapeHtml(book.name)}</h1>
     </div>
-    <p class="status-line">${escapeHtml(state.status)}${state.query ? ` · 筛选「${escapeHtml(state.query)}」 ${state.filtered.length} 首` : ""}</p>
-    ${volumeControls}
+    <p class="why-line">${escapeHtml(book.why || book.blurb || "")}</p>
+    <p class="status-line">${escapeHtml(state.status)}${state.query ? ` · 「${escapeHtml(state.query)}」${state.filtered.length} 首` : ""}</p>
+    ${corpusNav}
     <div class="browse-bar">
-      <input class="field" id="shelfSearch" type="search" placeholder="在本书中搜索标题、作者、诗句" value="${escapeHtml(state.query)}" />
+      <input class="field" id="q" type="search" placeholder="在本书中找：标题、作者、句子" value="${escapeHtml(state.query)}" />
     </div>
     <div class="poem-list">
       ${pageItems.map((p, i) => `
@@ -317,11 +482,11 @@ function renderBrowse() {
     </div>
   `
 
-  $("backLib").onclick = () => { location.hash = "#/library" }
-  $("shelfSearch").oninput = (e) => {
+  $("back").onclick = () => history.back()
+  $("q").oninput = (e) => {
     state.query = e.target.value.trim()
     state.page = 1
-    filterShelf()
+    filterBook()
     renderBrowse()
   }
   app().querySelectorAll(".poem-row[data-idx]").forEach((el) => {
@@ -334,29 +499,17 @@ function renderBrowse() {
   $("prevPage").onclick = () => { state.page -= 1; renderBrowse() }
   $("nextPage").onclick = () => { state.page += 1; renderBrowse() }
 
-  const volRow = $("volRow")
-  if (volRow) {
-    volRow.querySelectorAll("[data-vol]").forEach((btn) => {
-      btn.onclick = async () => {
-        const delta = Number(btn.dataset.vol)
-        const next = state.volume + delta
-        if (next < 0 || next >= shelf.files.length) return
-        location.hash = `#/shelf/${shelf.id}/${next}`
-      }
-    })
-  }
-  const authorBtn = $("btnAuthorFind")
-  if (authorBtn) {
-    authorBtn.onclick = () => promptAuthorFind()
-  }
+  const prevB = $("prevBatch")
+  const nextB = $("nextBatch")
+  if (prevB) prevB.onclick = () => { location.hash = `#/library/book/${book.id}/${state.batch - 1}` }
+  if (nextB) nextB.onclick = () => { location.hash = `#/library/book/${book.id}/${state.batch + 1}` }
+  const findA = $("findAuthor")
+  if (findA) findA.onclick = () => findAuthorInCorpus(book)
 }
 
-function filterShelf() {
+function filterBook() {
   const q = state.query
-  if (!q) {
-    state.filtered = state.poems
-    return
-  }
+  if (!q) { state.filtered = state.poems; return }
   state.filtered = state.poems.filter((p) =>
     p.title.includes(q) ||
     p.author.includes(q) ||
@@ -365,58 +518,54 @@ function filterShelf() {
   )
 }
 
-async function promptAuthorFind() {
-  const name = prompt("输入作者名（如：李白）")
+async function findAuthorInCorpus(book) {
+  const name = prompt("想找哪位作者？（如：李白）")
   if (!name) return
-  const shelf = state.shelf
-  app().innerHTML = `<p class="status-line">正在全库查找「${escapeHtml(name)}」…</p>`
+  app().innerHTML = `<p class="status-line">正在书架间查找「${escapeHtml(name)}」…</p>`
   try {
-    if (!state.authorIndex) {
-      state.authorIndex = await fetchJson(shelf.authorIndex)
+    const index = await fetchJson(book.authorIndex)
+    let keys = Object.keys(index).filter((k) => k === name || k.includes(name))
+    if (!keys.length) {
+      app().innerHTML = `
+        <p class="empty">没有找到「${escapeHtml(name)}」</p>
+        <div class="actions"><button class="btn ghost" id="back">返回</button></div>
+      `
+      $("back").onclick = () => renderBrowse()
+      return
     }
-    const shards = state.authorIndex[name] || state.authorIndex[name.trim()]
-    // fuzzy: includes
-    let hitShards = shards
-    if (!hitShards) {
-      const keys = Object.keys(state.authorIndex).filter((k) => k.includes(name))
-      if (!keys.length) {
-        app().innerHTML = `<p class="empty">未找到作者「${escapeHtml(name)}」</p><div class="actions"><button class="btn ghost" id="back">返回</button></div>`
-        $("back").onclick = () => renderBrowse()
-        return
-      }
-      hitShards = [...new Set(keys.flatMap((k) => state.authorIndex[k]))]
-    }
-    // map shard number to file
-    const files = shelf.files.filter((f) => {
+    keys = keys.slice(0, 6)
+    const shardNums = [...new Set(keys.flatMap((k) => index[k]))]
+    const files = book.files.filter((f) => {
       const m = f.match(/(\d+)\.json$/)
-      return m && hitShards.includes(Number(m[1]))
+      return m && shardNums.includes(Number(m[1]))
     })
     const poems = []
-    for (const file of files.slice(0, 12)) {
+    for (const file of files.slice(0, 20)) {
       const data = await fetchJson(file)
       for (const item of data) {
-        if (item && item.author && item.author.includes(name)) {
-          const p = normalize(item, shelf.name, file)
-          if (isReadablePoem(p)) poems.push(p)
-        }
+        if (!item || !item.author) continue
+        if (!keys.some((k) => item.author === k || item.author.includes(name))) continue
+        const p = normalize(item, book.name, file)
+        if (isReadablePoem(p)) poems.push(p)
       }
     }
     state.poems = poems
     state.filtered = poems
     state.query = name
     state.page = 1
-    state.status = `作者「${name}」· ${poems.length} 首`
+    state.status = `找到与「${name}」相关 ${poems.length} 首`
     renderBrowse()
-  } catch (e) {
-    app().innerHTML = `<p class="empty">${escapeHtml(e.message)}</p>`
+  } catch {
+    app().innerHTML = `<p class="empty">查找失败</p>`
   }
 }
 
+/* ========== 阅读 ========== */
 function renderReader() {
   setNav(state.view === "favs" ? "favs" : state.view === "search" ? "search" : "library")
   const poem = state.current
   if (!poem) {
-    app().innerHTML = `<p class="empty">暂无选中篇目</p><div class="actions"><a class="btn" href="#/library">去书库</a></div>`
+    app().innerHTML = `<p class="empty">还没有打开篇目</p><div class="actions"><a class="btn" href="#/library">去图书馆</a></div>`
     return
   }
   pushRecent(poem)
@@ -425,41 +574,41 @@ function renderReader() {
     <section class="reader-wrap">
       <div class="reader-tools">
         <button class="btn ghost" type="button" id="backBtn">返回</button>
-        <button class="btn ghost ${fav ? "fav-on" : ""}" type="button" id="favBtn">${fav ? "已收藏" : "收藏此篇"}</button>
+        <button class="btn ghost ${fav ? "fav-on" : ""}" type="button" id="favBtn">${fav ? "已在书架" : "放入书架"}</button>
       </div>
       ${readingBlock(poem)}
     </section>
   `
   $("backBtn").onclick = () => history.back()
-  $("favBtn").onclick = () => {
-    toggleFav(poem)
-    renderReader()
-  }
+  $("favBtn").onclick = () => { toggleFav(poem); renderReader() }
 }
 
+/* ========== 找诗 ========== */
 async function renderSearch() {
   setNav("search")
   state.view = "search"
   await ensureLibrary()
   app().innerHTML = `
     <div class="section-head">
-      <h2>检索</h2>
-      <p>先查精选读本，再按作者入全库</p>
+      <h2>找诗</h2>
+      <p>先在入门读本里找；知道作者时，再进唐、宋专库</p>
     </div>
     <div class="search-box">
       <div class="row">
-        <input class="field" id="q" type="search" placeholder="标题、作者、词牌或诗句" />
-        <button class="btn" type="button" id="go">检索</button>
+        <input class="field" id="q" type="search" placeholder="输入诗题、作者、词牌或一句诗" />
+        <button class="btn" type="button" id="go">查找</button>
       </div>
       <div class="tabs">
-        <button class="chip active" type="button" data-scope="featured">精选读本</button>
-        <button class="chip" type="button" data-scope="author-tang">全唐诗·作者</button>
-        <button class="chip" type="button" data-scope="author-ci">全宋词·作者</button>
+        <button class="chip active" type="button" data-scope="path">入门读本</button>
+        <button class="chip" type="button" data-scope="tang-author">唐诗作者</button>
+        <button class="chip" type="button" data-scope="ci-author">宋词作者</button>
       </div>
     </div>
-    <div id="results"></div>
+    <div id="results">
+      <p class="guide">小提示：不确定作者时，用「入门读本」；确定是李白杜甫时，用作者查找更快。</p>
+    </div>
   `
-  let scope = "featured"
+  let scope = "path"
   app().querySelectorAll(".chip[data-scope]").forEach((c) => {
     c.onclick = () => {
       scope = c.dataset.scope
@@ -474,46 +623,44 @@ async function renderSearch() {
 async function doSearch(q, scope) {
   const box = $("results")
   if (!q) {
-    box.innerHTML = `<p class="empty">请输入关键词</p>`
+    box.innerHTML = `<p class="empty">请输入要找的内容</p>`
     return
   }
-  box.innerHTML = `<p class="status-line">检索中…</p>`
+  box.innerHTML = `<p class="status-line">查找中…</p>`
+  const lib = await ensureLibrary()
   try {
-    if (scope === "featured") {
-      const lib = await ensureLibrary()
-      const featured = lib.shelves.filter((s) => s.group === "精选")
+    if (scope === "path") {
+      const floor = lib.floors.find((f) => f.id === "path")
       const hits = []
-      for (const shelf of featured) {
-        for (const file of shelf.files) {
+      for (const id of floor.rooms) {
+        const book = bookById(id)
+        for (const file of book.files || []) {
           const data = await fetchJson(file)
-          const arr = Array.isArray(data) ? data : []
-          for (const item of arr) {
-            const p = normalize(item, shelf.name, file)
+          for (const item of (Array.isArray(data) ? data : [])) {
+            const p = normalize(item, book.name, file)
             if (!isReadablePoem(p)) continue
             const blob = [p.title, p.author, p.rhythmic, ...p.lines].join("\n")
             if (blob.includes(q)) hits.push(p)
-            if (hits.length >= 80) break
+            if (hits.length >= 60) break
           }
-          if (hits.length >= 80) break
+          if (hits.length >= 60) break
         }
-        if (hits.length >= 80) break
+        if (hits.length >= 60) break
       }
-      renderSearchHits(box, hits, `精选读本中找到 ${hits.length} 首`)
-      return
+      return renderHits(box, hits, `在入门读本中找到 ${hits.length} 首`)
     }
 
-    const lib = await ensureLibrary()
-    const shelfId = scope === "author-ci" ? "quan-song-ci" : "quan-tang"
-    const shelf = lib.shelves.find((s) => s.id === shelfId)
-    const index = await fetchJson(shelf.authorIndex)
+    const corpusId = scope === "ci-author" ? "quan-song-ci" : "quan-tang"
+    const book = bookById(corpusId)
+    const index = await fetchJson(book.authorIndex)
     let keys = Object.keys(index).filter((k) => k === q || k.includes(q))
     if (!keys.length) {
-      box.innerHTML = `<p class="empty">未找到作者「${escapeHtml(q)}」</p>`
+      box.innerHTML = `<p class="empty">没有找到作者「${escapeHtml(q)}」</p>`
       return
     }
     keys = keys.slice(0, 8)
-    const shardNums = [...new Set(keys.flatMap((k) => index[k]))].slice(0, 15)
-    const files = shelf.files.filter((f) => {
+    const shardNums = [...new Set(keys.flatMap((k) => index[k]))].slice(0, 16)
+    const files = book.files.filter((f) => {
       const m = f.match(/(\d+)\.json$/)
       return m && shardNums.includes(Number(m[1]))
     })
@@ -523,19 +670,19 @@ async function doSearch(q, scope) {
       for (const item of data) {
         if (!item || !item.author) continue
         if (!keys.some((k) => item.author === k || item.author.includes(q))) continue
-        const p = normalize(item, shelf.name, file)
+        const p = normalize(item, book.name, file)
         if (isReadablePoem(p)) hits.push(p)
         if (hits.length >= 100) break
       }
       if (hits.length >= 100) break
     }
-    renderSearchHits(box, hits, `作者相关 ${hits.length} 首`)
-  } catch (e) {
-    box.innerHTML = `<p class="empty">${escapeHtml(e.message)}</p>`
+    renderHits(box, hits, `与「${q}」相关 ${hits.length} 首`)
+  } catch {
+    box.innerHTML = `<p class="empty">查找失败</p>`
   }
 }
 
-function renderSearchHits(box, hits, label) {
+function renderHits(box, hits, label) {
   box.innerHTML = `
     <p class="status-line">${escapeHtml(label)}</p>
     <div class="poem-list">
@@ -559,6 +706,7 @@ function renderSearchHits(box, hits, label) {
   })
 }
 
+/* ========== 我的书架 ========== */
 function renderFavs() {
   setNav("favs")
   state.view = "favs"
@@ -566,25 +714,25 @@ function renderFavs() {
   const recent = loadStore(STORAGE_RECENT)
   app().innerHTML = `
     <div class="section-head">
-      <h2>收藏</h2>
-      <p>保存在本机浏览器，换设备不会同步</p>
+      <h2>我的书架</h2>
+      <p>收藏与最近阅读保存在本机，换设备不会带走</p>
     </div>
-    <div class="group-label">我的收藏 · ${favs.length}</div>
+    <div class="group-label">收藏 · ${favs.length}</div>
     <div class="poem-list" id="favList">
-      ${favs.map((p, i) => rowHtml(p, i, "fav")).join("") || `<div class="empty">尚未收藏。读到喜欢的，点「收藏此篇」。</div>`}
+      ${favs.map((p, i) => rowHtml(p, i)).join("") || `<div class="empty">书架还空着。读到喜欢的，点「放入书架」。</div>`}
     </div>
-    <div class="group-label">最近阅读</div>
+    <div class="group-label">最近翻开</div>
     <div class="poem-list" id="recentList">
-      ${recent.map((p, i) => rowHtml(p, i, "recent")).join("") || `<div class="empty">还没有阅读记录</div>`}
+      ${recent.map((p, i) => rowHtml(p, i)).join("") || `<div class="empty">还没有阅读记录</div>`}
     </div>
   `
-  bindPoemRows(favs, "favList")
-  bindPoemRows(recent, "recentList")
+  bindRows(favs, "favList")
+  bindRows(recent, "recentList")
 }
 
-function rowHtml(p, i, prefix) {
+function rowHtml(p, i) {
   return `
-    <div class="poem-row" data-prefix="${prefix}" data-i="${i}">
+    <div class="poem-row" data-i="${i}">
       <div>
         <strong>${escapeHtml(p.title)}</strong>
         <div class="sub">${escapeHtml([p.author, p.shelf].filter(Boolean).join(" · "))}</div>
@@ -594,8 +742,8 @@ function rowHtml(p, i, prefix) {
   `
 }
 
-function bindPoemRows(list, containerId) {
-  const box = $(containerId)
+function bindRows(list, id) {
+  const box = $(id)
   if (!box) return
   box.querySelectorAll(".poem-row").forEach((el) => {
     el.onclick = () => {
@@ -603,10 +751,6 @@ function bindPoemRows(list, containerId) {
       location.hash = "#/read"
     }
   })
-}
-
-function $(id) {
-  return document.getElementById(id)
 }
 
 window.addEventListener("hashchange", route)
