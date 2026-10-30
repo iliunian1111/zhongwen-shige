@@ -383,7 +383,7 @@ async function renderLibraryHome() {
     <p class="guide">${escapeHtml(lib.inventoryNote || "")}</p>
     <div class="floor-map">
       ${lib.floors.map((f, i) => `
-        <a class="floor-card" href="#/library/floor/${f.id}" style="animation-delay:${i * 50}ms">
+        <a class="floor-card" href="#/library/floor/${encodeURIComponent(f.id)}" style="animation-delay:${i * 50}ms">
           <div class="floor-no">0${i + 1}</div>
           <div>
             <h3>${escapeHtml(f.name)}</h3>
@@ -683,8 +683,8 @@ function renderBrowse() {
 
   const prevB = $("prevBatch")
   const nextB = $("nextBatch")
-  if (prevB) prevB.onclick = () => { location.hash = `#/library/book/${book.id}/${state.batch - 1}` }
-  if (nextB) nextB.onclick = () => { location.hash = `#/library/book/${book.id}/${state.batch + 1}` }
+  if (prevB) prevB.onclick = () => { location.hash = `#/library/book/${encodeURIComponent(book.id)}/${state.batch - 1}` }
+  if (nextB) nextB.onclick = () => { location.hash = `#/library/book/${encodeURIComponent(book.id)}/${state.batch + 1}` }
   const findA = $("findAuthor")
   if (findA) findA.onclick = () => findAuthorInCorpus(book)
 }
