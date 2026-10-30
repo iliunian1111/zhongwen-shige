@@ -26,10 +26,33 @@ function encodePath(path) {
   return path.split("/").map(encodeURIComponent).join("/")
 }
 
+/** 保证相对站点根目录取数（避免无尾部 / 时路径跑偏） */
+function assetUrl(path) {
+  const base = document.baseURI || location.href
+  const root = base.replace(/\/[^/]*$/, "/")
+  return new URL(encodePath(path), root).href
+}
+
 async function fetchJson(path) {
-  const res = await fetch("./" + encodePath(path))
+  const res = await fetch(assetUrl(path), { cache: "no-cache" })
   if (!res.ok) throw new Error("加载失败")
   return res.json()
+}
+
+function decodeRouteId(id) {
+  if (!id) return ""
+  try {
+    return decodeURIComponent(id)
+  } catch (e) {
+    return id
+  }
+}
+
+function authorMatch(itemAuthor, target) {
+  if (!target) return true
+  const a = String(itemAuthor || "").normalize("NFC").trim()
+  const b = String(target).normalize("NFC").trim()
+  return a === b
 }
 
 function escapeHtml(s) {
@@ -105,11 +128,11 @@ function setNav(active) {
 }
 
 async function ensureLibrary() {
-  if (!state.library) state.library = await fetchJson("library.json")
+  if (!state.library) state.library = await fetchJson("library.json?v=6")
   return state.library
 }
 async function ensureDaily() {
-  if (!state.dailyPool) state.dailyPool = await fetchJson("daily-pool.json")
+  if (!state.dailyPool) state.dailyPool = await fetchJson("daily-pool.json?v=6")
   return state.dailyPool
 }
 
@@ -123,9 +146,11 @@ function route() {
   const name = parts[0] || "today"
   if (name === "today" || !parts.length) return renderToday()
   if (name === "library") {
-    if (parts[1] === "floor" && parts[2]) return renderFloor(parts[2])
-    if (parts[1] === "hub" && parts[2]) return renderHub(parts[2])
-    if (parts[1] === "book" && parts[2]) return openBook(parts[2], Number(parts[3] || 0))
+    if (parts[1] === "floor" && parts[2]) return renderFloor(decodeRouteId(parts[2]))
+    if (parts[1] === "hub" && parts[2]) return renderHub(decodeRouteId(parts[2]))
+    if (parts[1] === "book" && parts[2]) {
+      return openBook(decodeRouteId(parts[2]), Number(parts[3] || 0))
+    }
     return renderLibraryHome()
   }
   if (name === "read") return renderReader()
@@ -336,10 +361,11 @@ async function renderToday() {
 function goBook(id) {
   const b = bookById(id)
   if (!b) return
+  const enc = encodeURIComponent(id)
   if (b.mode === "era-hub" || b.mode === "form-hub" || b.mode === "bundle") {
-    location.hash = `#/library/hub/${id}`
+    location.hash = `#/library/hub/${enc}`
   } else {
-    location.hash = `#/library/book/${id}`
+    location.hash = `#/library/book/${enc}`
   }
 }
 
@@ -519,12 +545,13 @@ async function openBook(bookId, batch = 0) {
   state.page = 1
   state.query = ""
   markProgress(bookId)
-  app().innerHTML = `<p class="status-line">正在取书：《${escapeHtml(book.name)}》…</p>`
+  app().innerHTML = `<p class="status-line">正在打开《${escapeHtml(book.name)}》…</p>`
   try {
     await loadBookPoems(book, batch)
     renderBrowse()
   } catch (e) {
-    app().innerHTML = `<p class="empty">取书失败，请稍后重试</p>`
+    console.error(e)
+    app().innerHTML = `<p class="empty">暂时打不开，请稍后重试</p>`
   }
 }
 
@@ -537,20 +564,49 @@ async function loadBookPoems(book, batch) {
     files = files.slice(start, start + BATCH)
   }
 
+  if (!files.length) {
+    state.poems = []
+    state.filtered = []
+    state.status = `${book.name}暂无篇目`
+    return
+  }
+
   const poems = []
-  for (const file of files) {
-    const data = await fetchJson(file)
-    const arr = Array.isArray(data) ? data : []
+  let done = 0
+  const total = files.length
+
+  // 分片并行拉取，单片失败不拖垮整架
+  const results = await Promise.all(
+    files.map(async (file) => {
+      try {
+        const data = await fetchJson(file)
+        done += 1
+        if (book.mode === "author" && total > 1) {
+          app().innerHTML = `<p class="status-line">正在打开《${escapeHtml(book.name)}》… ${done}/${total}</p>`
+        }
+        return Array.isArray(data) ? data : []
+      } catch (e) {
+        done += 1
+        console.warn("load fail", file, e)
+        return []
+      }
+    })
+  )
+
+  for (let i = 0; i < results.length; i++) {
+    const arr = results[i]
+    const file = files[i]
     for (const item of arr) {
       if (!item || typeof item !== "object") continue
       if ("desc" in item && "name" in item && !item.paragraphs && !item.content && !item.title) continue
       if (book.mode === "author" && book.author) {
-        if (item.author !== book.author) continue
+        if (!authorMatch(item.author, book.author)) continue
       }
       const p = normalize(item, book.name, file)
       if (isReadablePoem(p)) poems.push(p)
     }
   }
+
   state.poems = poems
   state.filtered = poems
   if (book.mode === "corpus") {
