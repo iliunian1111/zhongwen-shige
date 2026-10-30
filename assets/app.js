@@ -23,14 +23,17 @@ const app = () => document.getElementById("app")
 const $ = (id) => document.getElementById(id)
 
 function encodePath(path) {
-  return path.split("/").map(encodeURIComponent).join("/")
+  // 只编码路径段，查询串 ?v= 不能编码，否则会 404
+  const [pathname, query] = String(path).split("?")
+  const encoded = pathname.split("/").map(encodeURIComponent).join("/")
+  return query ? `${encoded}?${query}` : encoded
 }
 
-/** 保证相对站点根目录取数（避免无尾部 / 时路径跑偏） */
+/** 相对当前站点目录取资源 */
 function assetUrl(path) {
-  const base = document.baseURI || location.href
-  const root = base.replace(/\/[^/]*$/, "/")
-  return new URL(encodePath(path), root).href
+  let dir = location.pathname
+  if (!dir.endsWith("/")) dir = dir.replace(/\/[^/]*$/, "/")
+  return `${location.origin}${dir}${encodePath(path)}`
 }
 
 async function fetchJson(path) {
@@ -128,11 +131,11 @@ function setNav(active) {
 }
 
 async function ensureLibrary() {
-  if (!state.library) state.library = await fetchJson("library.json?v=6")
+  if (!state.library) state.library = await fetchJson("library.json?v=7")
   return state.library
 }
 async function ensureDaily() {
-  if (!state.dailyPool) state.dailyPool = await fetchJson("daily-pool.json?v=6")
+  if (!state.dailyPool) state.dailyPool = await fetchJson("daily-pool.json?v=7")
   return state.dailyPool
 }
 
